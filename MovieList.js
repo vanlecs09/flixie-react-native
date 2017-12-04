@@ -1,8 +1,11 @@
 import React from 'react';
-import { Text, FlatList, StyleSheet, View, ActivityIndicator, Image } from 'react-native';
-import { SearchBar } from 'react-native-elements'
+import { Text, FlatList, StyleSheet, View, ActivityIndicator, Image, Dimensions } from 'react-native';
+import { SearchBar, Button } from 'react-native-elements'
 import MovieCard from './MovieCard.js';
 import TabNavigator from 'react-native-tab-navigator';
+
+const screenWidth = Dimensions.get('window').width;
+const screenHeight = Dimensions.get('window').height;
 
 export default class MovieList extends React.Component {
     constructor(props) {
@@ -11,22 +14,36 @@ export default class MovieList extends React.Component {
         this.state = {
             selectedTab: 'NowPlaying',
             isSearchingMovie: false,
+            renderMode : 'singleRow',
+            numColumns : 1,
         }
+    }
+    
+    changeRenderViewListMode() {
+        this.setState({
+            renderMode : this.state.renderMode == 'singleRow' ? 'grid' : 'singleRow',
+            numColumns : this.state.renderMode == 'singleRow' ? 3 : 1
+        })
     }
 
     renderSearchBar() {
         const screenProps = this.props.screenProps;
         let renderObj =
-            <SearchBar
-                onChangeText={(text) => {screenProps.onSearching(text)}}
-                placeholder='Type Here...' 
-                onSubmitEditing={(text) => {screenProps.onSearchEnter(text)}}
-                onClearText = {() => {alert('1')}}/>
+            <View >
+                <SearchBar style={topViewStyles.searchbar}
+                    onChangeText={(text) => { screenProps.onSearching(text) }}
+                    placeholder='Type Here...'
+                    onSubmitEditing={(text) => { screenProps.onSearchEnter(text) }}
+                />
+                <Button style = {topViewStyles.buttonViewMode}
+                    onPress = {() => {this.changeRenderViewListMode()}}
+                     />
+            </View>
         return renderObj
     }
 
 
-    renderListView() {;
+    renderListView(renderMode) {
         const screenProps = this.props.screenProps;
         const navigate = this.props.navigation.navigate;
         return (
@@ -35,17 +52,23 @@ export default class MovieList extends React.Component {
                 <FlatList
                     data={screenProps.movies}
                     keyExtractor={(movie) => movie.id}
-                    renderItem={(movieItem) => <MovieCard {...movieItem.item} loadProfile={() => {
+                    renderItem={(movieItem) => <MovieCard 
+                        {...movieItem.item}
+                        renderMode = {this.state.renderMode}
+                        loadProfile={() => {
                         navigate('MovieProfile', movieItem.item)
                     }} />}
+                    key = {( this.state.renderMode == 'singleRow' ) ? 1 : 0 }
                     onEndReached={screenProps.loadMore}
                     onEndReachedThreshold={0.05}
                     refreshing={screenProps.loading}
+                    numColumns={this.state.numColumns}
                     ListFooterComponent={
                         <View style={{ flex: 1, padding: 10 }}>
                             <ActivityIndicator size="large" />
                         </View>
                     }
+                    
                 />
             </View>)
 
@@ -88,5 +111,23 @@ const styles = StyleSheet.create({
 
     tabNavigator: {
         height: 300,
+    }
+})
+
+const topViewStyles = StyleSheet.create({
+    container: {
+        flex: 1,
+        flexDirection: 'row',
+    },
+
+    searchbar: {
+        width: screenWidth * (2 / 3)
+    },
+
+    buttonViewMode: {
+        top : 2,
+        width: 20,
+        height: 20,
+        bottom : 2,
     }
 })

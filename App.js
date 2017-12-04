@@ -32,6 +32,7 @@ export default class App extends React.Component {
   }
 
   componentWillMount(props) {
+    console.log("component will mount");
     this.fetchPage(this.state.page)
   }
 
@@ -53,6 +54,7 @@ export default class App extends React.Component {
   }
 
   fetchPage(page) {
+    console.log("fetchPage");
     let url = this.getUrl();
   
     this.setState({
@@ -79,6 +81,7 @@ export default class App extends React.Component {
   }
 
   loadMore() {
+    console.log("load more");
     let newPage = this.state.page + 1;
     this.setState( {
       page : newPage
